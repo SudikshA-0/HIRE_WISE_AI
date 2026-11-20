@@ -20,3 +20,9 @@ services:
         sync: false
       - key: SUPABASE_KEY
         sync: false
+      - key: HIREWISE_ML_SERVICE_URL
+        sync: false
+      - key: HIREWISE_ML_API_KEY
+        sync: false
+      - key: HIREWISE_ML_TIMEOUT_SECONDS
+        value: "2"

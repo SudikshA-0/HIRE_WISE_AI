@@ -6,6 +6,7 @@ from flask_login import login_required, current_user
 from database.connection import db
 from models.interview import InterviewSession
 from models.response import Response
+from services.ml_inference_service import MLInferenceService
 
 SKLEARN_AVAILABLE = None
 ml_classifier = None
@@ -90,7 +91,7 @@ def home():
     total_interviews = len(sessions)
     
     if total_interviews == 0:
-        return render_template('dashboard.html', total_interviews=0, sessions=[])
+        return render_template('dashboard.html', total_interviews=0, sessions=[], ml_inflation={"available": False, "predictions": [], "message": "Complete a resume-based interview to see an optional ML comparison."})
         
     # Averages
     avg_overall = round(sum(s.overall_score for s in sessions) / total_interviews, 1)
@@ -145,6 +146,23 @@ def home():
             readiness_class = "danger"
             readiness_desc = "You require active preparation. Focus on foundational technical answers and reduce filler words."
             
+    # Keep the existing rule-based resume score and show the external ML result separately.
+    ml_inflation = {"available": False, "predictions": [],
+                    "message": "No matched resume claim data is available for ML inference."}
+    for completed_session in sessions:
+        try:
+            competency_map = completed_session.get_competency_map()
+            rule_analysis = competency_map.get("resume_inflation_analysis", {})
+            mismatches = rule_analysis.get("skills_mismatch", [])
+            if mismatches:
+                ml_inflation = MLInferenceService().predict_skill_mismatches(mismatches)
+                ml_inflation["rule_based_score"] = rule_analysis.get("resume_inflation_score")
+                break
+        except Exception as exc:
+            ml_inflation = {"available": False, "predictions": [],
+                            "message": f"ML comparison unavailable ({exc.__class__.__name__})."}
+            break
+
     # Retrieve all responses for filler word summary
     responses = db.session.query(Response).join(InterviewSession).filter(InterviewSession.user_id == current_user.id).all()
     
@@ -182,6 +200,7 @@ def home():
         readiness_label=readiness_label,
         readiness_class=readiness_class,
         readiness_desc=readiness_desc,
+        ml_inflation=ml_inflation,
         avg_wpm=avg_wpm,
         total_fillers=total_fillers,
         top_fillers=sorted_fillers,

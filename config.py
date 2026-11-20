@@ -103,7 +103,7 @@ class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     # Uploads Configuration
-    UPLOAD_FOLDER = BASE_DIR / "uploads"
+    UPLOAD_FOLDER = Path(os.environ.get("HIREWISE_UPLOAD_FOLDER", BASE_DIR / "uploads"))
     UPLOAD_FOLDER.mkdir(parents=True, exist_ok=True)
 
     ALLOWED_EXTENSIONS = {"pdf", "wav", "webm", "mp4", "mp3"}

@@ -1,7 +1,11 @@
 mlflow
 scikit-learn
-fastapi
+fastapi>=0.115,<1.0
+starlette>=0.40,<1.0
 uvicorn
+python-dotenv
 pydantic
 pytest
-httpx
+httpx>=0.27,<1.0
+pandas
+requests

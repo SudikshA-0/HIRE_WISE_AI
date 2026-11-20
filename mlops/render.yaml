@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: hirewise-ml-service
+    runtime: docker
+    rootDir: mlops
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /health
+    envVars:
+      - key: MLFLOW_TRACKING_URI
+        sync: false
+      - key: MLOPS_PREDICTION_DB
+        value: /app/data/predictions.db
+      - key: HIREWISE_ML_API_KEY
+        sync: false
+      - key: MLOPS_MONITORING_WINDOW_DAYS
+        value: "30"
+    disk:
+      name: hirewise-ml-predictions
+      mountPath: /app/data
+      sizeGB: 1
